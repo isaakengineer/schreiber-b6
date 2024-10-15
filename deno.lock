@@ -728,6 +728,9 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@codemirror/lang-markdown@^6.3.0",
+        "npm:@codemirror/language@^6.10.3",
+        "npm:@codemirror/legacy-modes@^6.4.1",
         "npm:@codemirror/state@^6.4.1",
         "npm:@codemirror/view@^6.34.1",
         "npm:@sveltejs/adapter-static@^3.0.1",

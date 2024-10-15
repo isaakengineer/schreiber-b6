@@ -1,7 +1,7 @@
 <script context="module">
-import { EditorView, minimalSetup, basicSetup } from 'codemirror'
-import { ViewPlugin } from '@codemirror/view'
-import { StateEffect } from '@codemirror/state'
+import { EditorView, minimalSetup, basicSetup } from 'codemirror';
+import { ViewPlugin } from '@codemirror/view';
+import { StateEffect } from '@codemirror/state';
 export { minimalSetup, basicSetup }
 </script>
 

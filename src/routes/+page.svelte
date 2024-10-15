@@ -2,8 +2,12 @@
 	import { invoke } from "@tauri-apps/api/core";
 	import { emit, once, listen } from "@tauri-apps/api/event";
 	import { getCurrentWindow } from '@tauri-apps/api/window';
-
-				
+	
+	// CODEMIRROR LANGUAGES
+	import { syntaxHighlighting, StreamLanguage } from "@codemirror/language";
+	import { stex } from "@codemirror/legacy-modes/mode/stex";
+	import { markdown } from "@codemirror/lang-markdown";
+	
 	import { onMount } from 'svelte'
 	import CodeMirror, { basicSetup } from '../Editor/CodeMirror.svelte'
 	
@@ -11,19 +15,25 @@
 	
 	import XCircle from "phosphor-svelte/lib/XCircle";
 	
+	import { anzahlAenderungen } from './store.js';
+	
+	const AUTOSAVE_TRIGGER = 128;
 	let store;
 	let initialStore;
 	let Ausstattung = {
 		haupt: "nichts",
 		identitaet: {
 			
-		}
+		},
+		editorStatus: "default",
 	};
 	let elementalCloseButtonWeight = "duotone";
 	const appWindow = getCurrentWindow();
+	let message = "";
+	let extensionsList = [];
 	
 	onMount(async () => {
-  		
+  		extensionsList.push(basicSetup);
 		const cl = document.body.classList
 		if (cl.contains('dark')) {
 			cl.remove('dark')
@@ -32,31 +42,62 @@
 	})
 	
 	listen("datei-gewaehlt", async (event) => {
-		console.log("file gewählt")
-		console.log(event.payload)
 		Ausstattung.identitaet = event.payload;
 		Ausstattung.haupt = "datei";
-		console.log(Ausstattung.identitaet);
+		switch (Ausstattung.identitaet.endung) {
+			case "tex":
+				extensionsList.push(StreamLanguage.define(stex));
+			break
+			case "md":
+				extensionsList.push(markdown());
+			break
+		}
 		initialStore = await invoke("lesen");
 	});
 	
-	function changeHandler({ detail: {trs} }) {
+	async function changeHandler({ detail: {trs} }) {
 		const changes = trs.map(tr => tr.changes)
 		console.log('change', changes.map(ch => ch.toJSON()))
 		if (changes.length > 1) {
 			const totalChange = changes.reduce((c1, c2) => c1.compose(c2))
 			console.log('totalChange', totalChange.toJSON())
 		}
+		$anzahlAenderungen = $anzahlAenderungen + changes.length;
+		Ausstattung.editorStatus = "schreiben";
+		if ( $anzahlAenderungen > AUTOSAVE_TRIGGER )
+		{
+			speichern()
+		}
 	}
 	
 	const speichern = async () => {
-		await invoke("schreiben", { text: $store });
+		Ausstattung.editorStatus = "pause";
+		let geschrieben = await invoke("schreiben", { text: $store })
+				.catch((err) => {
+					console.log(err)
+					message = err;
+					return false;
+					Ausstattung.editorStatus = "error";
+				});
+			if ( geschrieben ) {
+				$anzahlAenderungen = 0;
+				geschrieben = undefined;
+				Ausstattung.editorStatus = "default"
+			} else {
+				
+				console.error("HUGE ERROR!")
+			}
 	}
 </script>
 
 <div class="haupt">
 	<header>
 		{#if Ausstattung.identitaet && Ausstattung.identitaet.name}
+			<button
+				class="{Ausstattung.editorStatus} fahne"
+				on:click={speichern}>
+				{#if $anzahlAenderungen > 0}{$anzahlAenderungen}{/if}
+			</button>
 			<div class="title">
 				<div class="name">{ Ausstattung.identitaet.name }</div>
 				<div class="pfad">{ Ausstattung.identitaet.dateipfad }</div>
@@ -82,7 +123,7 @@
 			<CodeMirror 
 				doc={initialStore}
 				bind:docStore={store}
-				extensions={basicSetup}
+				extensions={extensionsList}
 				on:change={changeHandler}></CodeMirror>
 			<div class="fake">
 				<div class="line"></div>
@@ -92,9 +133,13 @@
 		{/if}
 	</main>
 	<footer>
-		<div class="ueber"></div>
+		{#if Ausstattung.identitaet.dateipfad }
+		<div class="ueber">
+			<div class="sprache">{ Ausstattung.identitaet.endung }</div>
+		</div>
+		{/if}
 		<div class="aktionen">
-			<button on:click={speichern}>speichere</button>
+			
 		</div>
 	</footer>
 </div>
@@ -174,16 +219,35 @@
 		> .app-name {
 			writing-mode: vertical-rl;
 		}
+		> .fahne {
+			display: block;
+			position: absolute;
+			top: 0px;
+			right: 0px;
+			
+			padding: .3rem;
+			box-sizing: border-box;
+
+			height: 1.8rem;
+			width: 100%;
+			text-align: center;
+			font-size: .8rem;
+			border: none;
+			&.schreiben { background-color: orange; cursor: pointer; }
+			&.default { background-color: #034694; }
+			&.error { background-color: red; }
+			&.pause { background-color: green; }
+		}
 		> .title {
  /* Align vertical */
 			// background-color: yellow;
 			position: absolute;
-			top: 0px;
+			top: 1.8rem;
 			left: 3.3rem;
+			width: calc(100vh - 6rem - 3px - 1.8rem);
 			transform-origin: 0 0;
 			transform: rotate(90deg);
 			justify-content: center;
-			width: calc(100vh - 6rem - 3px);
 			text-align: center;
 			font-size: 1.2rem;
 			overflow: hidden;
@@ -239,4 +303,16 @@ button.elemental {
 					box-shadow: none;
 				}
 			}
+
+footer {
+	> .ueber {
+		display: flex;
+		flex-direction: row-reverse;
+		> .sprache {
+			padding: 1rem .5rem;
+			writing-mode: vertical-rl;
+			background-color: yellow;
+		}
+	}
+}
 </style>

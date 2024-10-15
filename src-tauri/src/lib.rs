@@ -26,10 +26,16 @@ fn lesen(app: AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
-fn schreiben(app: AppHandle, text: &str) -> Result<(), String> {
+fn schreiben(app: AppHandle, text: &str) -> Result<bool, String> {
     let character = identitaet_ausgeben(app.clone());
-    fs::write(character.dateipfad.unwrap(), text).expect("Könnte nicht auf den Datei zuschreiben");
-    Ok(())
+    let res = fs::write(character.dateipfad.unwrap(), text);
+	match res {
+	    Ok(_) => Ok(true),
+	    Err(e) => {
+	        let m = format!("Könnte nicht auf den Datei zuschreiben. Siehe {:?}", e);
+	        Err(m)
+	    }
+	}
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
