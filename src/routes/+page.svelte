@@ -9,33 +9,26 @@
 	import { markdown } from "@codemirror/lang-markdown";
 
 	import { onMount } from 'svelte'
-	import CodeMirror, { basicSetup } from '../Editor/CodeMirror.svelte'
+	import CodeMirror, { basicSetup } from '$lib/Editor/CodeMirror.svelte'
 
-	import Datei from '../datei/Datei.svelte';
+	import Datei from '$lib/datei/Datei.svelte';
+	import { csvDatei, reset as csvReset } from '$lib/Editor/store.js';
+	import CSVUI from '$lib/Editor/CSVUI.svelte';
 
 	import XCircle from "phosphor-svelte/lib/XCircle";
 
-	import { anzahlAenderungen } from './store.js';
+	import { anzahlAenderungen, Ausstattung } from './store.js';
 
 	const AUTOSAVE_TRIGGER = 128;
-	let datei = {
-		kopfreihe: [],
-		reihen: [],
-		neueReihe: [],
-	};
+	csvReset();
 	let store;
 	let initialStore;
-	let Ausstattung = {
-		haupt: "nichts",
-		identitaet: {
-
-		},
-		editorStatus: "default",
-	};
 	let elementalCloseButtonWeight = "duotone";
 	const appWindow = getCurrentWindow();
 	let message = "";
 	let extensionsList = [];
+	let pfad = [];
+	let csvgeandert = false;
 
 	onMount(async () => {
   		extensionsList.push(basicSetup);
@@ -47,27 +40,28 @@
 	})
 
 	listen("datei-gewaehlt", async (event) => {
-		Ausstattung.identitaet = event.payload;
-		switch (Ausstattung.identitaet.endung) {
+		$Ausstattung.identitaet = event.payload;
+		switch ($Ausstattung.identitaet.endung) {
 			case "tex":
 				extensionsList.push(StreamLanguage.define(stex));
-				Ausstattung.haupt = "text";
+				$Ausstattung.haupt = "text";
 			break
 			case "md":
 				extensionsList.push(markdown());
-				Ausstattung.haupt = "text";
+				$Ausstattung.haupt = "text";
 			break
 			case "csv":
 				let headers = await invoke("csv_lesen_kopf");
 				let records = await invoke("csv_lesen_reihen");
-				datei.kopfreihe = headers;
-				datei.reihen = records;
-				datei.neueReihe = Array(datei.kopfreihe.length)
+				$csvDatei.kopfreihe = headers;
+				$csvDatei.reihen = records;
+				$csvDatei.neueReihe = Array(headers.length)
 				console.log(records)
 				console.log(headers)
-				Ausstattung.haupt = "datei";
+				$Ausstattung.haupt = "datei";
 			break
 		}
+		pfad = $Ausstattung.identitaet.dateipfad.split("/").reverse().slice(1,4);
 		initialStore = await invoke("lesen");
 	});
 
@@ -79,7 +73,7 @@
 			console.log('totalChange', totalChange.toJSON())
 		}
 		$anzahlAenderungen = $anzahlAenderungen + changes.length;
-		Ausstattung.editorStatus = "schreiben";
+		$Ausstattung.editorStatus = "schreiben";
 		if ( $anzahlAenderungen > AUTOSAVE_TRIGGER )
 		{
 			speichern()
@@ -87,67 +81,76 @@
 	}
 
 	const speichern = async () => {
-		Ausstattung.editorStatus = "pause";
+		$Ausstattung.editorStatus = "pause";
 		let geschrieben = await invoke("schreiben", { text: $store })
-				.catch((err) => {
-					console.log(err)
-					message = err;
-					return false;
-					Ausstattung.editorStatus = "error";
-				});
-			if ( geschrieben ) {
-				$anzahlAenderungen = 0;
-				geschrieben = undefined;
-				Ausstattung.editorStatus = "default"
-			} else {
+			.catch((err) => {
+				console.log(err)
+				message = err;
+				return false;
+				$Ausstattung.editorStatus = "error";
+			});
+		if ( geschrieben ) {
+			$anzahlAenderungen = 0;
+			geschrieben = undefined;
+			$Ausstattung.editorStatus = "default"
+		} else {
 
-				console.error("HUGE ERROR!")
-			}
+			console.error("HUGE ERROR!")
+		}
 	}
-	const writeCVS = async () => {
-		console.log(datei.neueReihe.length)
+	const CSVSpeichern = async () => {
+		$Ausstattung.editorStatus = "pause";
+		console.log($csvDatei.neueReihe.length)
 		let neueReihe = Array()
-		for (let i = 0; i < datei.kopfreihe.length; i++) {
-			neueReihe.push((!datei.neueReihe[i]) ? "" : datei.neueReihe[i]);
+		for (let i = 0; i < $csvDatei.kopfreihe.length; i++) {
+			neueReihe.push((!$csvDatei.neueReihe[i]) ? "" : $csvDatei.neueReihe[i]);
 		}
 		console.log(neueReihe)
 		let geschrieben = await invoke("csv_schreiben", {reihe: neueReihe});
-
-		let headers = await invoke("csv_lesen_kopf");
-		let records = await invoke("csv_lesen_reihen");
-		datei.kopfreihe = headers;
-		datei.reihen = records;
-		datei.neueReihe = []
-		for (let i = 0; i < datei.kopfreihe.length; i++) {
-			datei.neueReihe.push("");
+		if ( geschrieben ) {
+			let headers = await invoke("csv_lesen_kopf");
+			let records = await invoke("csv_lesen_reihen");
+			$csvDatei.fahneGeaendert = false;
+			$csvDatei.kopfreihe = headers;
+			$csvDatei.reihen = records;
+			$csvDatei.neueReihe = []
+			for (let i = 0; i < $csvDatei.kopfreihe.length; i++) {
+				$csvDatei.neueReihe.push("");
+			}
+			$Ausstattung.editorStatus = 'default';
+		} else {
+			console.log("something went terribly wrong")
 		}
 	}
 </script>
 
-<div class="haupt {Ausstattung.haupt}">
+<div class="haupt {$Ausstattung.haupt}">
 	<header>
-		{#if Ausstattung.identitaet && Ausstattung.identitaet.name}
+		{#if $Ausstattung.identitaet && $Ausstattung.identitaet.name}
 
-			{#if Ausstattung.haupt === "text"}
+			{#if $Ausstattung.haupt === "text"}
 				<button
-					class="{Ausstattung.editorStatus} fahne"
+					class="{$Ausstattung.editorStatus} fahne"
 					on:click={speichern}>
 					{#if $anzahlAenderungen > 0}{$anzahlAenderungen}{/if}
 				</button>
-			{:else if Ausstattung.haupt === "csv"}
-				<!-- <button TODO!
-					class="{Ausstattung.editorStatus} fahne"
-					on:click={speichern}>
-					{#if $anzahlAenderungen > 0}{$anzahlAenderungen}{/if}
-				</button> -->
+			{:else if $Ausstattung.haupt === "datei"}
+				<button
+					class="{$Ausstattung.editorStatus} fahne"
+					on:click={CSVSpeichern}>
+					{#if $csvDatei.fahneGeaendert }speichern{/if}
+				</button>
 			{/if}
 
 			<div class="title">
-				<div class="name">{ Ausstattung.identitaet.name }</div>
-				<div class="pfad">{ Ausstattung.identitaet.dateipfad }</div>
+				<div class="name">{ $Ausstattung.identitaet.name }</div>
+				<!-- <div class="pfad">{ $Ausstattung.identitaet.dateipfad }</div> -->
+				<div class="pfad">
+					{#each pfad as p}<span>{p}</span>{/each}
+				</div>
 			</div>
 		{:else}
-			<div class="app-name">(Schreiber)</div>
+			<div class="app-name">Schreiber-B6</div>
 		{/if}
 	</header>
 	<div class="movable">
@@ -162,33 +165,11 @@
 		</button>
 	</div>
 	<main>
-		{#if Ausstattung.haupt === "nichts"}
+		{#if $Ausstattung.haupt === "nichts"}
 			<Datei />
-		{:else if Ausstattung.haupt === "datei"}
-			<table class="datei">
-				<thead class="kopfreihe" style="grid-template-columns: repeat({datei.kopfreihe.length}, 1fr);">
-					{#each datei.kopfreihe as k}
-						<th class="">{k}</th>
-					{/each}
-				</thead>
-				<tbody class="reihen">
-					{#each datei.reihen as r}
-						<tr class="reihe" style="grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr))">
-							{#each datei.kopfreihe as k}
-								<td class="" >{r[k]}</td>
-							{/each}
-						</tr>
-					{/each}
-					<tr class="reihe" style="grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr))">
-						{#each datei.kopfreihe as k, index}
-							<td class="" >
-								<input bind:value={datei.neueReihe[index]} />
-							</td>
-						{/each}
-					</tr>
-				</tbody>
-			</table>
-		{:else if Ausstattung.haupt === "text"}
+		{:else if $Ausstattung.haupt === "datei"}
+			<CSVUI />
+		{:else if $Ausstattung.haupt === "text"}
 			<div class="schreiber">
 				<CodeMirror
 					doc={initialStore}
@@ -203,14 +184,11 @@
 		{/if}
 	</main>
 	<footer>
-		{#if Ausstattung.identitaet.dateipfad}
+		{#if $Ausstattung.identitaet.dateipfad}
 		<div class="ueber">
-			<div class="sprache">{ Ausstattung.identitaet.endung }</div>
+			<div class="sprache">{ $Ausstattung.identitaet.endung }</div>
 		</div>
 		{/if}
-		<div class="aktionen">
-			<button on:click={writeCVS}>CVS</button>
-		</div>
 	</footer>
 </div>
 
@@ -231,7 +209,7 @@
 		"main movable"
 		"main tauri";
 	grid-template-columns: 1fr 4rem;
-	grid-template-rows: 1fr 3rem 3rem;
+	grid-template-rows: 1fr 2.4rem 2.8rem 2.8rem;
 	gap: 1px;
 	> main {
 		grid-area: main;
@@ -289,7 +267,7 @@
 		background-color: white;
 	}
 	> footer {
-		background-color: #eee;
+		background-color: pink;
 		> .aktionen {
 			display: flex;
 			padding: .4rem;
@@ -333,7 +311,7 @@
 			position: absolute;
 			top: 1.8rem;
 			left: 3.3rem;
-			width: calc(100vh - 6rem - 3px - 1.8rem);
+			width: calc(100vh - 10rem - 3px - 1.8rem);
 			transform-origin: 0 0;
 			transform: rotate(90deg);
 			justify-content: center;
@@ -352,6 +330,9 @@
 				color: lightblue;
 				font-size: .8rem;
 				overflow: hidden;
+				> span {
+					padding: 0 .5rem;
+				}
 			}
 		}
 	}
@@ -383,7 +364,7 @@
 button.elemental {
 	background-color: transparent;
 	color: white;
-	padding: .2rem;
+	padding: .35rem;
 	border: none;
 	box-shadow: none;
 	margin: .2rem;
@@ -396,11 +377,12 @@ button.elemental {
 footer {
 	> .ueber {
 		display: flex;
-		flex-direction: row-reverse;
+		flex-direction: column;
 		> .sprache {
-			padding: 1rem .5rem;
-			writing-mode: vertical-rl;
-			background-color: yellow;
+			padding: .2rem .5rem;
+			text-align: center;
+
+			color: darkred;
 		}
 	}
 }

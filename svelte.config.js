@@ -6,10 +6,16 @@ import { sveltePreprocess } from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  preprocess: sveltePreprocess({}),
-  kit: {
-    adapter: adapter(),
-  },
+	preprocess: sveltePreprocess({
+  		scss: {
+	    	prependData: `@import './src/style.scss';`,
+     		// renderSync: true,
+       		includePaths: [ './src/style']
+    	}
+	}),
+	kit: {
+		adapter: adapter(),
+	},
 };
 
 export default config;

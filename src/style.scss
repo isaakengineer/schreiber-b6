@@ -1,0 +1,13 @@
+:root {
+	--haupthintergrundfarbe: #034694;
+	--hauptgegenhintergrundfarbe: #efefef;
+}
+
+section {
+	margin: 1rem;
+	> header {
+		font-size: 2em;
+	}
+}
+
+// ## CSV
