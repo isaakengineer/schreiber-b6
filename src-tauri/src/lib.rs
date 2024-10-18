@@ -1,15 +1,20 @@
-use std::fs;
-
+use std::{collections::HashMap, fs};
+use fs::File;
 use tauri_plugin_cli::CliExt;
+use std::error::Error;
+use std::fs::OpenOptions;
+use std::io::Seek;
 
 use std::sync::Mutex;
 use tauri::{AppHandle, Builder, Emitter, Listener, Manager};
 
+use csv::StringRecord;
+
 mod pfad;
 
 use pfad::{
-    datei_waehlen, 
-    identitaet_ausgeben, 
+    datei_waehlen,
+    identitaet_ausgeben,
     dateipfad_eingegeben,
     AppIdentitaet};
 
@@ -38,6 +43,98 @@ fn schreiben(app: AppHandle, text: &str) -> Result<bool, String> {
 	}
 }
 
+type Record = HashMap<String, String>;
+
+#[tauri::command]
+fn csv_lesen_kopf(app: AppHandle) -> Result<Vec<String>, String> {
+	let character = identitaet_ausgeben(app.clone());
+	let file = File::open(character.dateipfad.unwrap());
+	let mut result:Vec<String>;
+	match file {
+		Ok(file) => {
+			let mut rdr = csv::Reader::from_reader(file);
+			let headers = rdr.headers();
+	        match headers {
+	        	Ok(headers) => {
+					let res = headers.deserialize(None);
+					match res {
+						Ok(res) => {
+							result = res;
+						}
+						Err(e) => {
+							let m = format!("Datei hat Fehlern! Siehe {:?}", e);
+       						return Err(m);
+						}
+					}
+	         	},
+	          	Err(e) => {
+	           		let m = format!("Datei hat Fehlern! Siehe {:?}", e);
+	             	return Err(m);
+	           }
+	        }
+		},
+		Err(e) => {
+			let m = format!("Datei könnte nicht gelesen werden! Siehe {:?}", e);
+   			return Err(m);
+		}
+	}
+	Ok(result)
+}
+
+#[tauri::command]
+fn csv_lesen_reihen(app: AppHandle) -> Result<Vec<Record>, String> {
+	let character = identitaet_ausgeben(app.clone());
+	let file = File::open(character.dateipfad.unwrap());
+	match file {
+		Ok(file) => {
+			let mut vec = Vec::new();
+			let mut rdr = csv::Reader::from_reader(file);
+			for result in rdr.deserialize() {
+		        match result {
+		        	Ok(record) => {
+						println!("{:?}", record);
+						vec.push(record);
+		         	},
+		          	Err(e) => {
+		           		let m = format!("Datei hat Fehlern! Siehe {:?}", e);
+		             	return Err(m);
+		           }
+		        }
+		    }
+		    Ok(vec)
+		},
+		Err(e) => {
+			let m = format!("Datei könnte nicht gelesen werden! Siehe {:?}", e);
+   			return Err(m);
+		}
+	}
+}
+#[tauri::command]
+fn csv_schreiben(app: AppHandle, reihe: Vec<String>) ->Result<bool, String> {
+	let character = identitaet_ausgeben(app.clone());
+	let mut file = OpenOptions::new()
+        .append(true)
+        .open(character.dateipfad.unwrap());
+	match file {
+		Ok(file) => {
+			// let needs_headers = file.seek(std::io::SeekFrom::End(0))? == 0;
+			let mut wtr = csv::WriterBuilder::new()
+        		// .has_headers(needs_headers)
+          		.from_writer(file);
+
+    		wtr.write_record(reihe);
+
+      		wtr.flush().unwrap();
+            ()
+		},
+		Err(e) => {
+			let m = format!("error");
+			()
+		}
+	}
+    Ok(true)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[tokio::main]
 pub async fn run() {
@@ -47,7 +144,13 @@ pub async fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
-            lesen, schreiben, datei_waehlen,
+            lesen, schreiben,
+
+            csv_lesen_kopf,
+            csv_lesen_reihen,
+            csv_schreiben,
+
+            datei_waehlen,
             dateipfad_eingegeben,
         ])
         .setup(|app| {

@@ -51,17 +51,31 @@
 	}
 </script>
 
-<div class="wilkomen-seite">
+<header class="wilkomen-seite">
+	<section>
+		<p>Noch ist kein Pfad vorhanden.</p>
+		<div style="display: flex; justify-content: space-between;">
+			<button on:click={fileWaehlen}>Datei wählen</button>
+       		<button on:click={fileErstellen}>Datei schaffen</button>
+        </div>
+	</section>
+	<section>
+	    <div class="box dropzone" on:drop={pfadLesen} on:dragover={allowDrop} on:dragover={dragoverHandler} >
+	        <p>Bitte ziehen Sie eine Textdatei hier hinein.</p>
+	    </div>
+	</section>
     <section class="message">
-        <h1>Wilkommen auf Schreiber</h1>
-        <p>Noch ist kein Pfad vorhanden.</p>
-        <button on:click={fileWaehlen}>Datei wählen</button>
-        <button on:click={fileErstellen}>Datei schaffen</button>
+        <header>Wilkommen auf Schreiber-B6</header>
+
+        <nav>
+        	<ul>
+         		<li>Einstellung</li>
+           		<li>Über</li>
+             	<li>Dokumentation</li>
+            </ul>
+        </nav>
     </section>
-    <div class="box dropzone" on:drop={pfadLesen} on:dragover={allowDrop} on:dragover={dragoverHandler} >
-        <p>Bitte ziehen Sie eine Textdatei hier hinein.</p>
-    </div>
-</div>
+</header>
 
 
 <style lang="scss">
@@ -73,16 +87,16 @@
     height: 100%;
     .message {
     }
-    .box {
-        margin: .2rem .4rem;
-        // width: 100%;
-        height: 100%;
-        // background-color: gray;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px dashed lightblue;
-        color: #333;
-    }
+}
+.box {
+    margin: .2rem .4rem;
+    // width: 100%;
+    height: 50vh;
+    // background-color: gray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed lightblue;
+    color: var(hauptgegenhintergrundfarbe);
 }
 </style>
