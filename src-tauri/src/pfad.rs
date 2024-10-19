@@ -1,8 +1,12 @@
 use serde::Serialize;
 use std::fs;
+use std::fs::File;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use tokio::sync::oneshot;
+
+extern crate dirs;
 
 use serde;
 
@@ -11,7 +15,7 @@ use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 const PFAD_ENDUNGEN: [&'static str; 4] = ["tex", "txt", "md", "cvs"];
 
-#[derive(Serialize, Default, Clone)]
+#[derive(Serialize, Default, Clone, Debug)]
 // #[derive(serde::Serialize)]
 pub struct AppIdentitaet {
     pub dateipfad: Option<String>,
@@ -47,7 +51,7 @@ pub fn identitaet_ausgeben(app: AppHandle) -> AppIdentitaet {
     charakter.clone()
 }
 
-async fn datei_aktivieren_oder_herstellen(app: AppHandle, path: String) -> Result<String, String> {
+fn datei_aktivieren_oder_herstellen(app: AppHandle, path: String) -> Result<String, String> {
     let contents = fs::read_to_string(path);
     match contents {
         Ok(contents) => Ok(contents),
@@ -59,18 +63,49 @@ async fn datei_aktivieren_oder_herstellen(app: AppHandle, path: String) -> Resul
 }
 
 #[tauri::command]
-pub async fn dateipfad_eingegeben(app: AppHandle, pfad: String) -> Result<AppIdentitaet, String> {
+pub fn neue_datei_erstellen(app: AppHandle, name: &str, inhalt: &str) -> Result<bool, String> {
+	println!("datei mit Name {:?} und Ihhalt {:?} erstellen", name.clone(), inhalt.clone());
+	let dokumente_pfad = dirs::document_dir().unwrap();
+	let mut datei_pfad = PathBuf::from(&dokumente_pfad);
+	datei_pfad.push(name);
+	println!("{:#?}", datei_pfad.clone());
+	if datei_pfad.exists() {
+		let m = format!("Eine datei mit dieser Name bereit exitiert");
+		println!("{:?}", m);
+		return Err(m);
+	} else {
+		let msg = format!("Fehlermeldung beim Erstellung des Datei.");
+		let mut datei = File::create(datei_pfad.clone()).expect(&msg);
+		let res = datei.write_all(inhalt.as_bytes());
+		match res {
+			Ok(_) => {
+				identitaet_fuellen(app.clone(), datei_pfad.to_str().unwrap().to_string());
+				let identitaet = identitaet_ausgeben(app.clone());
+				app.emit("datei-gewaehlt", identitaet.clone()).unwrap();
+				Ok(true)
+			},
+			Err(e) => {
+				let msg = format!("Könnte nicht auf den Datei zuschreiben. Siehe: {:?}", e);
+				return Err(msg)
+			}
+		}
+	}
+}
+
+#[tauri::command]
+pub fn dateipfad_eingegeben(app: AppHandle, pfad: &str) -> Result<AppIdentitaet, String> {
 	// TODO: noch weitere Checks hinzufügen, falls die "pfad" manipuliert worden sein sollte!
 	// 	ähnlich wie "neue_dateipfad_pruefen" aber die erste Check soll anderes rum sein
 	// 		Messane = "this app cannot access the path provided!"
 	// TODO: name ändern "dateipfad_einsetzen"
-
-	let res = datei_aktivieren_oder_herstellen(app.clone(), pfad.clone()).await;
+	println!("dateipfad ({:?}) eingegeben und wird bearbeitet", pfad);
+	let res = datei_aktivieren_oder_herstellen(app.clone(), pfad.to_string().clone());
 	match res {
 		Ok(_) => {
-			identitaet_fuellen(app.clone(), pfad.clone());
+			identitaet_fuellen(app.clone(), pfad.to_string().clone());
 			let identitaet = identitaet_ausgeben(app.clone());
 			app.emit("datei-gewaehlt", identitaet.clone()).unwrap();
+			println!("{:?}", identitaet.clone());
 			Ok(identitaet)
 		}
 		Err(e) => {
@@ -102,7 +137,7 @@ pub async fn datei_waehlen(app: AppHandle) -> Result<AppIdentitaet, String> {
     let file_path = rx.await.unwrap();
 
     if !file_path.is_empty() {
-        let res = datei_aktivieren_oder_herstellen(app.clone(), file_path.clone()).await;
+        let res = datei_aktivieren_oder_herstellen(app.clone(), file_path.clone());
         match res {
             Ok(_) => {
                 identitaet_fuellen(app.clone(), file_path.clone());

@@ -31,6 +31,13 @@
 	let csvgeandert = false;
 
 	onMount(async () => {
+		await invoke('init_pruefen')
+			.then((payload) => {
+				$Ausstattung.identitaet = payload;
+				init();
+			}).catch(() => {
+				console.log("nicht init")
+			});
   		extensionsList.push(basicSetup);
 		const cl = document.body.classList
 		if (cl.contains('dark')) {
@@ -39,16 +46,18 @@
 		}
 	})
 
-	listen("datei-gewaehlt", async (event) => {
-		$Ausstattung.identitaet = event.payload;
+	const init = async () => {
+		console.log("initializing")
 		switch ($Ausstattung.identitaet.endung) {
 			case "tex":
 				extensionsList.push(StreamLanguage.define(stex));
 				$Ausstattung.haupt = "text";
+				initialStore = await invoke("lesen");
 			break
 			case "md":
 				extensionsList.push(markdown());
 				$Ausstattung.haupt = "text";
+				initialStore = await invoke("lesen");
 			break
 			case "csv":
 				let headers = await invoke("csv_lesen_kopf");
@@ -60,9 +69,17 @@
 				console.log(headers)
 				$Ausstattung.haupt = "datei";
 			break
+			default:
+				$Ausstattung.haupt = "text";
+				initialStore = await invoke("lesen");
+			break
 		}
 		pfad = $Ausstattung.identitaet.dateipfad.split("/").reverse().slice(1,4);
-		initialStore = await invoke("lesen");
+	}
+
+	listen("datei-gewaehlt", async (event) => {
+		$Ausstattung.identitaet = event.payload;
+		init();
 	});
 
 	async function changeHandler({ detail: {trs} }) {
@@ -151,6 +168,13 @@
 			</div>
 		{:else}
 			<div class="app-name">Schreiber-B6</div>
+			<nav>
+	        	<ul>
+	         		<li>Einstellung</li>
+	           		<li>Über</li>
+	             	<li>Dokumentation</li>
+	            </ul>
+	        </nav>
 		{/if}
 	</header>
 	<div class="movable">
@@ -211,6 +235,9 @@
 	grid-template-columns: 1fr 4rem;
 	grid-template-rows: 1fr 2.4rem 2.8rem 2.8rem;
 	gap: 1px;
+	&.nichts {
+		grid-template-columns: 1fr 2.5rem;
+	}
 	> main {
 		grid-area: main;
 		overflow: scroll;
@@ -279,12 +306,16 @@
 		padding: .4rem;
 		box-sizing: border-box;
 		display: flex;
-		justify-content: center; /* Align horizontal */
+		flex-direction: column;
+		justify-content: space-around;
+		/* justify-content: center;  */
+		/* Align horizontal */
 		align-items: center;
-		font-size: 1.3rem;
 		position: relative;
 		> .app-name {
+			font-size: 1.3rem;
 			writing-mode: vertical-rl;
+			flex-shrink: 1;
 		}
 		> .fahne {
 			display: block;
@@ -383,6 +414,24 @@ footer {
 			text-align: center;
 
 			color: darkred;
+		}
+	}
+}
+
+nav {
+	ul {
+		margin: 0px;
+		padding: 0 1rem;
+		gap: 2px;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		li {
+			padding: 1rem .5rem;
+			list-style: none;
+			writing-mode: vertical-lr;
+			color: #333;
+			background-color: lightblue;
 		}
 	}
 }
