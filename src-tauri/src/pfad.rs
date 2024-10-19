@@ -42,7 +42,7 @@ fn identitaet_fuellen(app: AppHandle, pfad: String) {
         charakter.name = Some(file_name.to_string());
         charakter.endung = Some(extension.to_string());
     } else {
-        println!("Could not extract file name and extension");
+    	panic!("Dateie ohne Endungen nicht funktionsbereit.");
     }
 }
 pub fn identitaet_ausgeben(app: AppHandle) -> AppIdentitaet {
@@ -64,13 +64,17 @@ fn datei_aktivieren_oder_herstellen(app: AppHandle, path: String) -> Result<Stri
 
 #[tauri::command]
 pub fn neue_datei_erstellen(app: AppHandle, name: &str, inhalt: &str) -> Result<bool, String> {
-	println!("datei mit Name {:?} und Ihhalt {:?} erstellen", name.clone(), inhalt.clone());
+	if ( name.is_empty() ) {
+		let msg = format!("Dateiname ist notwendig.");
+		return Err(msg);
+	}
+	println!("Datei mit Name {:?} und Ihhalt {:?} erstellen", name.clone(), inhalt.clone());
 	let dokumente_pfad = dirs::document_dir().unwrap();
 	let mut datei_pfad = PathBuf::from(&dokumente_pfad);
 	datei_pfad.push(name);
 	println!("{:#?}", datei_pfad.clone());
 	if datei_pfad.exists() {
-		let m = format!("Eine datei mit dieser Name bereit exitiert");
+		let m = format!("Eine datei mit dieser Name bereit exitiert.");
 		println!("{:?}", m);
 		return Err(m);
 	} else {

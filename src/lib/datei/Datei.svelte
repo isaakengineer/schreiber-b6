@@ -9,52 +9,56 @@
 		name: '',
 		inhalt: '',
 	}
+	let meldung = '';
 
 	// Ein Funktionen-Paar, weil ansonsten Tauri kann nicht durch Browser die Pfad von "drag-drop event" lesen.
-  listen('tauri://drag-enter', async (event) => {
-    console.log("drag enter event", event);
-    pfad = event.payload.paths[0];
-  });
-  listen('tauri://drag-leave', event => {
-  	console.log("dragged file left!")
-    pfad = null;
-  });
-  listen('tauri://drag-drop', (event) => {
-  console.log("tauri drop event!")
-  	console.log(event);
-  })
+	listen('tauri://drag-enter', async (event) => {
+		console.log("drag enter event", event);
+		pfad = event.payload.paths[0];
+	});
+	listen('tauri://drag-leave', event => {
+		console.log("dragged file left!")
+		pfad = null;
+	});
+	listen('tauri://drag-drop', (event) => {
+	console.log("tauri drop event!")
+		console.log(event);
+	})
 
  	window.addEventListener("drop",function(e){
-	  e = e || event;
-	  e.preventDefault();
+		e = e || event;
+		e.preventDefault();
 	},false); //preventing drag and drop nonesense!
 
 	async function fileWaehlen() {
-	    file = await invoke("datei_waehlen");
+			file = await invoke("datei_waehlen");
 	}
 	const fileErstellen = async () => {
-	    file = await invoke("datei_erstellen");
-	    console.log(file);
+			file = await invoke("datei_erstellen");
+			console.log(file);
 	}
 
 	const pfadLesen = async (event) => {
-  	if (pfad) {
-	  	file = await invoke("dateipfad_eingegeben", {
+		if (pfad) {
+			file = await invoke("dateipfad_eingegeben", {
 			pfad: pfad // hier die Pfad wird durch von Tauri festgelegten Data erfüllt
 		});
-   	} else {
-    	console.log("something went wrong during drop!", event);
-    }
-  }
+	 	} else {
+			console.log("something went wrong during drop!", event);
+		}
+	}
 
 	const neueDateiErstellen = async () => {
-		let status = await invoke('neue_datei_erstellen', { name: neueDatei.name, inhalt: neueDatei.inhalt }).catch(() => { console.log("neue Datei geschafft."); })
+		let status = await invoke('neue_datei_erstellen', { name: neueDatei.name, inhalt: neueDatei.inhalt }).catch((e) => {
+			console.warn("neue Datei geschafft.", e);
+			meldung = e;
+		})
 	}
 	const allowDrop = (event) => { // nur zum Testen
 		// console.log("something!")
 	}
 	function dragoverHandler(ev) {
-	  ev.preventDefault();
+		ev.preventDefault();
 	}
 </script>
 
@@ -63,12 +67,15 @@
 		Wilkommen auf
 		<em>Schreiber-B6</em>
 	</header>
+	{#if meldung}
+		<section class="meldung"><p>{meldung}</p></section>
+	{/if}
 	<section>
 		<p class="hinweis">Noch ist kein Pfad vorhanden.</p>
 		<div style="display: flex; justify-content: space-between;">
 			<button on:click={fileWaehlen}>Datei wählen</button>
-       		<!-- <button on:click={fileErstellen}>Datei schaffen</button> -->
-        </div>
+			 		<!-- <button on:click={fileErstellen}>Datei schaffen</button> -->
+				</div>
 	</section>
 	<section>
 		<div>
@@ -89,17 +96,25 @@
 			<textarea placeholder="Inhalt" bind:value={neueDatei.inhalt} />
 		</div>
 	</section>
-	<section>
-	    <div class="box dropzone" on:drop={pfadLesen} on:dragover={allowDrop} on:dragover={dragoverHandler} >
-	        <p>Bitte ziehen Sie eine Textdatei hier hinein.</p>
-	    </div>
+	<section class="box-container">
+			<div class="box dropzone" on:drop={pfadLesen} on:dragover={allowDrop} on:dragover={dragoverHandler} >
+					<p>Bitte ziehen Sie eine Textdatei hier hinein.</p>
+			</div>
 	</section>
 </div>
 
 
 <style lang="scss">
 section {
-	margin: 1rem 1rem;
+	padding: 0px 1rem;
+	&.meldung {
+		margin: 1rem 1rem 0px 1rem;
+		padding: 0px 1rem;
+		background-color: pink;
+		color: darkred;
+		box-shadow: 0px 0px .2rem black;
+		border-radius: .5rem;
+	}
 }
 p.hinweis {
 	color: lightblue;
@@ -121,27 +136,28 @@ section > .input {
 	}
 }
 .wilkomen-seite {
-    display: flex;
-    flex-direction: column;
-    // display: grid;
-    // grid-template-rows: fit-content 1fr;
-    height: 100%;
-    > header {
-    	padding: 2rem 2rem 0px 2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		// display: grid;
+		// grid-template-rows: fit-content 1fr;
+		height: 100%;
+		> header {
+			padding: 2rem 2rem 0px 2rem;
 		font-size: 2em;
 	}
-    .message {
-    }
+		.message {
+		}
+	> .box-container { flex-grow: 1; padding: 1rem; padding-top: 0px; }
 }
 .box {
-    margin: 0px 1rem;
-    // width: 100%;
-    height: 30vh;
-    // background-color: gray;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px dashed lightblue;
-    color: var(hauptgegenhintergrundfarbe);
+		// width: 100%;box-container
+		// background-color: gray;
+	display: flex;
+	height: 100%;
+	align-items: center;
+		justify-content: center;
+		border: 2px dashed lightblue;
+		color: var(hauptgegenhintergrundfarbe);
 }
 </style>

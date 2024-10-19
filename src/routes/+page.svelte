@@ -236,7 +236,7 @@
 	grid-template-rows: 1fr 2.4rem 2.8rem 2.8rem;
 	gap: 1px;
 	&.nichts {
-		grid-template-columns: 1fr 2.5rem;
+		grid-template-columns: 1fr 2.6rem;
 	}
 	> main {
 		grid-area: main;
@@ -305,6 +305,7 @@
 		background-color: #034694;
 		padding: .4rem;
 		box-sizing: border-box;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-around;
@@ -419,9 +420,11 @@ footer {
 }
 
 nav {
+	margin: 0px;
+	padding: 0px;
 	ul {
 		margin: 0px;
-		padding: 0 1rem;
+		padding: 0px;
 		gap: 2px;
 		display: flex;
 		flex-direction: column;
