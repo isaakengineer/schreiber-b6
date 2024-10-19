@@ -3102,8 +3102,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "schreiber"
-version = "1.0.2"
+name = "schreiber-b6"
+version = "1.1.0"
 dependencies = [
  "csv",
  "dirs",
