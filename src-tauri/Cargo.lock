@@ -3135,7 +3135,7 @@ dependencies = [
 
 [[package]]
 name = "schreiber-b6"
-version = "1.1.0"
+version = "1.2.1"
 dependencies = [
  "csv",
  "dirs",

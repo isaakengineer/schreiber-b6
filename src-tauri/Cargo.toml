@@ -1,6 +1,6 @@
 [package]
 name = "schreiber-b6"
-version = "1.2.0"
+version = "1.2.1"
 description = "Schreiber für kurze Textbearbeitung."
 authors = ["Isaak Engineer"]
 edition = "2021"

@@ -64,37 +64,37 @@
 
 <div class="wilkomen-seite">
 	<header>
-		Wilkommen auf
+		<!-- Wilkommen auf -->
 		<em>Schreiber-B6</em>
 	</header>
 	{#if meldung}
 		<section class="meldung"><p>{meldung}</p></section>
 	{/if}
 	<section>
-		<p class="hinweis">Noch ist kein Pfad vorhanden.</p>
+		<div>
+			<p class="hinweis">Eine neue Datei in Ihre <strong>Dokumente</strong>fach</p>
+		</div>
+		<div class="input">
+			<label for="inhalt">Inhalt</label>
+			<textarea id="inhalt"
+				size="2"
+				placeholder="" bind:value={neueDatei.inhalt} />
+		</div>
+		<div class="input">
+			<label for="name">Name</label>
+			<input id="name" type="text"
+				style="width: 100%;"
+				placeholder="<Dateiname>.Endung"
+				bind:value={neueDatei.name} />
+			<button on:click={neueDateiErstellen}>erstellen</button>
+		</div>
+	</section>
+	<section>
+		<!-- <p class="hinweis">Noch ist kein Pfad vorhanden.</p> -->
 		<div style="display: flex; justify-content: space-between;">
 			<button on:click={fileWaehlen}>Datei wählen</button>
 			 		<!-- <button on:click={fileErstellen}>Datei schaffen</button> -->
 				</div>
-	</section>
-	<section>
-		<div class="input">
-			<label>Inhalt</label>
-			<textarea placeholder="Inhalt" bind:value={neueDatei.inhalt} />
-		</div>
-		<div class="input">
-			<label>Name</label>
-			<input type="text"
-				style="width: 100%;"
-				placeholder="Dateiname"
-				bind:value={neueDatei.name} />
-		</div>
-		<div>
-			<p class="hinweis">
-				Eine neue Datei in Ihre <strong>Dokumente</strong>fach
-				<button on:click={neueDateiErstellen}>erstellen</button>
-			</p>
-		</div>
 	</section>
 	<section class="box-container">
 			<div class="box dropzone" on:drop={pfadLesen} on:dragover={allowDrop} on:dragover={dragoverHandler} >
@@ -132,7 +132,9 @@ section > .input {
 	}
 	textarea {
 		flex-grow: 1;
-		height: 1rem;
+		font-weight: 300;
+		resize: none;
+		/* font-family: 'Lato'; */
 	}
 }
 .wilkomen-seite {
