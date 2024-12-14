@@ -78,11 +78,9 @@
 				</div>
 	</section>
 	<section>
-		<div>
-			<p class="hinweis">
-				Eine neue Datei in Ihre <strong>Dokumente</strong>fach
-				<button on:click={neueDateiErstellen}>erstellen</button>
-			</p>
+		<div class="input">
+			<label>Inhalt</label>
+			<textarea placeholder="Inhalt" bind:value={neueDatei.inhalt} />
 		</div>
 		<div class="input">
 			<label>Name</label>
@@ -91,9 +89,11 @@
 				placeholder="Dateiname"
 				bind:value={neueDatei.name} />
 		</div>
-		<div class="input">
-			<label>Inhalt</label>
-			<textarea placeholder="Inhalt" bind:value={neueDatei.inhalt} />
+		<div>
+			<p class="hinweis">
+				Eine neue Datei in Ihre <strong>Dokumente</strong>fach
+				<button on:click={neueDateiErstellen}>erstellen</button>
+			</p>
 		</div>
 	</section>
 	<section class="box-container">

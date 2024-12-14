@@ -1,8 +1,8 @@
 {
 	"$schema": "https://schema.tauri.app/config/2.0.0",
 	"productName": "schreiber-b6",
-	"version": "1.1.0",
-	"identifier": "com.outils.schreiber",
+	"version": "1.2.0",
+	"identifier": "com.schloosser.techne.schreiber-b6",
 	"build": {
 		"beforeDevCommand": "deno run dev",
 		"devUrl": "http://localhost:1420",

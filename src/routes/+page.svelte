@@ -228,13 +228,13 @@
 	width: 100vw;
 	display: grid;
 	grid-template:
+		"main movable"
 		"main header"
 		"main footer"
-		"main movable"
 		"main tauri";
 	grid-template-columns: 1fr 4rem;
-	grid-template-rows: 1fr 2.4rem 2.8rem 2.8rem;
-	gap: 1px;
+	grid-template-rows: 2.4rem 1fr 2.8rem 2.8rem;
+	gap: 2px;
 	&.nichts {
 		grid-template-columns: 1fr 2.6rem;
 	}
