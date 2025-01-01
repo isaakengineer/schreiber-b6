@@ -54,7 +54,9 @@ fn csv_lesen_kopf(app: AppHandle) -> Result<Vec<String>, String> {
 	let mut result:Vec<String>;
 	match file {
 		Ok(file) => {
-			let mut rdr = csv::Reader::from_reader(file);
+			let mut rdr = csv::ReaderBuilder::new()
+				.comment(Some(b'#'))
+				.from_reader(file);
 			let headers = rdr.headers();
 			match headers {
 				Ok(headers) => {
@@ -90,7 +92,9 @@ fn csv_lesen_reihen(app: AppHandle) -> Result<Vec<Record>, String> {
 	match file {
 		Ok(file) => {
 			let mut vec = Vec::new();
-			let mut rdr = csv::Reader::from_reader(file);
+			let mut rdr = csv::ReaderBuilder::new()
+				.comment(Some(b'#'))
+				.from_reader(file);
 			for result in rdr.deserialize() {
 				match result {
 					Ok(record) => {

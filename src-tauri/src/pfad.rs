@@ -13,7 +13,7 @@ use serde;
 use tauri::{AppHandle, Builder, Emitter, Listener, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
-const PFAD_ENDUNGEN: [&'static str; 4] = ["tex", "txt", "md", "cvs"];
+const PFAD_ENDUNGEN: [&'static str; 4] = ["tex", "txt", "md", "csv"];
 
 #[derive(Serialize, Default, Clone, Debug)]
 // #[derive(serde::Serialize)]
