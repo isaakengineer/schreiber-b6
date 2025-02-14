@@ -1,7 +1,15 @@
-# Tauri + SvelteKit
+# Schreiber-B6
 
-This template should help get you started developing with Tauri and SvelteKit in Vite.
+## Screenshot
 
-## Recommended IDE Setup
+[![schreiber-b6-2025-02-14.png](https://i.postimg.cc/8C8brTV9/schreiber-b6-2025-02-14.png)](https://postimg.cc/v4znJFTt)
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+## Description
+
+A texteditor application for (currently only Linux) desktop;
+Optimized for writing and quick revision of longer texts;
+For hobby authors.
+
+## Technologies
+
+Tauri + SvelteKit
