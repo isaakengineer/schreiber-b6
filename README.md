@@ -25,6 +25,7 @@ _to my soulamte_. **Valentine Gift 2025**.
 
 ### Links
 
+- main git repo: https://git.schloosser.net/schreiber/b6.git
 
 ## Technologies
 
