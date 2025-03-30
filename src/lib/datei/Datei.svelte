@@ -21,8 +21,10 @@
 		pfad = null;
 	});
 	listen('tauri://drag-drop', (event) => {
-	console.log("tauri drop event!")
+		console.log("tauri drop event!")
 		console.log(event);
+		pfad = event.payload.paths[0];
+		pfadLesen(pfad)
 	})
 
  	window.addEventListener("drop",function(e){
@@ -97,9 +99,9 @@
 				</div>
 	</section>
 	<section class="box-container">
-			<div class="box dropzone" on:drop={pfadLesen} on:dragover={allowDrop} on:dragover={dragoverHandler} >
-					<p>Bitte ziehen Sie eine Textdatei hier hinein.</p>
-			</div>
+		<div class="box dropzone" on:drop={pfadLesen} on:dragover={allowDrop} on:dragover={dragoverHandler} >
+			<p>Bitte ziehen Sie eine Textdatei hier hinein.</p>
+		</div>
 	</section>
 </div>
 
@@ -146,20 +148,24 @@ section > .input {
 		height: 100%;
 		> header {
 			padding: 2rem 2rem 0px 2rem;
-		font-size: 2em;
-	}
+			font-size: 2em;
+		}
 		.message {
 		}
-	> .box-container { flex-grow: 1; padding: 1rem; padding-top: 0px; }
+	> .box-container {
+		flex-grow: 1;
+		padding: 1rem;
+		padding-top: 0px;
+	}
 }
 .box {
-		// width: 100%;box-container
-		// background-color: gray;
+	// width: 100%;box-container
+	// background-color: gray;
 	display: flex;
 	height: 100%;
 	align-items: center;
-		justify-content: center;
-		border: 2px dashed lightblue;
-		color: var(hauptgegenhintergrundfarbe);
+	justify-content: center;
+	border: 2px dashed lightblue;
+	color: var(hauptgegenhintergrundfarbe);
 }
 </style>

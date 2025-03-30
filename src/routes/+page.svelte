@@ -240,7 +240,7 @@
 	}
 	> main {
 		grid-area: main;
-		overflow: scroll;
+		overflow: auto;
 	}
 	> footer {
 		grid-area: footer;
