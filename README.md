@@ -10,7 +10,6 @@ A texteditor application for (currently only Linux) desktop;
 Optimized for writing and quick revision of longer texts;
 For hobby authors.
 
-
 ## Status
 
 ### Maturity
