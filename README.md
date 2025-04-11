@@ -16,13 +16,20 @@ For hobby authors.
 
 **For my soulmate without whose love I could not afford my volunteer work!**
 
-### Maturity
+### Quality
 
 - quality of source code: MVP 2
 - quality of documentation: NULL
 - stage of product growth: mittle (mehrartiges Textbearbeitung)
 
 ### Links
+
+#### Companies
+
+- Developer Group: **[Techne](https://techne.schloosser.com)**
+- Dveloper group's parent organisation: **[Schlösser](https://schloosser.com)**
+
+#### Source-Code
 
 - main git repo: https://git.schloosser.net/schreiber/b6.git
 
