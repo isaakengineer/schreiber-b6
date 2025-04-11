@@ -10,17 +10,17 @@ A texteditor application for (currently only Linux) desktop;
 Optimized for writing and quick revision of longer texts;
 For hobby authors.
 
-## Status
+## Imprint
+
+### Dedication
+
+**For my soulmate without whose love I could not afford my volunteer work!**
 
 ### Maturity
 
 - quality of source code: MVP 2
 - quality of documentation: NULL
 - stage of product growth: mittle (mehrartiges Textbearbeitung)
-
-### Dedication
-
-_to my soulamte_. **Valentine Gift 2025**.
 
 ### Links
 
