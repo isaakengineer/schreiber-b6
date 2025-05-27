@@ -1,5 +1,17 @@
 # Schreiber-B6
 
+## ❤️ Support this project
+
+If you like this project and want to support it, feel free to send a small donation (Bitcoin):
+
+`bc1qtmvkgp3d9svpq8622shxvmjccmu3pz6k8yh4a`
+
+or the universal code:
+
+`PM8TJKkg86BgcFHNTe2bxjJiJk921QMyjfeQVtmAKSk644EZcmgcrqZaVLewFA61rra8sZRxXZHu18TzHzaPAPHBEH49xTyjAwx8gH5Qd2KuJK3Z5w8L`
+
+The donated funds will be used exclusively for [server costs / development / documentation]. Thank you for your support!
+
 ## Screenshot
 
 [![schreiber-b6-2025-02-14.png](https://i.postimg.cc/8C8brTV9/schreiber-b6-2025-02-14.png)](https://postimg.cc/v4znJFTt)
